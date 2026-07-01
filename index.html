@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il tuo 18esimo — un indovinello</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2b33;
+    --ink-soft:#2c3f49;
+    --parchment:#f6efe2;
+    --parchment-dim:#ece2cf;
+    --coral:#e8674a;
+    --gold:#c9a253;
+    --sage:#8fa998;
+    --line: rgba(246,239,226,0.16);
+    --shadow: 0 30px 60px -25px rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 700px at 15% -10%, rgba(143,169,152,0.18), transparent 60%),
+      radial-gradient(900px 600px at 100% 110%, rgba(232,103,74,0.14), transparent 55%),
+      var(--ink);
+    color:var(--parchment);
+    font-family:'Space Grotesk', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 16px;
+    overflow-x:hidden;
+  }
+  .stage{
+    width:100%;
+    max-width:560px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ---- ROUTE / progress ---- */
+  .route{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:26px;
+    padding:0 4px;
+    width: 100%;
+    max-width: 560px;
+  }
+  .route .seg{
+    flex:1;
+    height:3px;
+    background:var(--line);
+    border-radius:3px;
+    position:relative;
+    overflow:hidden;
+  }
+  .route .seg::after{
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(90deg, var(--coral), var(--gold));
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform .6s cubic-bezier(.65,.05,.36,1);
+  }
+  .route .seg.done::after{transform:scaleX(1);}
+  .plane{
+    font-size:18px;
+    transform:rotate(90deg);
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));
+    transition:transform .3s ease;
+    flex-shrink:0;
+  }
+
+  /* ---- CARD ---- */
+  .card{
+    background:var(--parchment);
+    color:var(--ink);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:38px 34px 32px;
+    position:relative;
+    min-height:380px;
+    width: 100%;
+    display:flex;
+    flex-direction:column;
+    animation:riseIn .55s cubic-bezier(.2,.8,.2,1);
+    border:1px solid rgba(28,43,51,0.06);
+  }
+  @keyframes riseIn{
+    from{opacity:0; transform:translateY(18px) scale(.98);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    top:16px; left:16px; right:16px; bottom:16px;
+    border:1px dashed rgba(28,43,51,0.14);
+    border-radius:12px;
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--coral);
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(24px, 5.4vw, 30px);
+    line-height:1.22;
+    margin:0 0 10px;
+  }
+  .sub{
+    font-size:15px;
+    color:var(--ink-soft);
+    line-height:1.55;
+    margin:0 0 26px;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:auto;
+  }
+  .opt{
+    text-align:left;
+    background:var(--parchment-dim);
+    border:1.5px solid transparent;
+    border-radius:13px;
+    padding:16px 18px;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15.5px;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color .2s, transform .15s, background .2s;
+    line-height:1.4;
+  }
+  .opt:hover{
+    border-color:var(--coral);
+    transform:translateX(3px);
+    background:#f1e6d2;
+  }
+  .opt:active{transform:translateX(3px) scale(.99);}
+  .opt:focus-visible{
+    outline:2px solid var(--ink);
+    outline-offset:2px;
+  }
+
+  .intro-btn, .restart-btn{
+    align-self:flex-start;
+    margin-top:8px;
+    background:var(--ink);
+    color:var(--parchment);
+    border:none;
+    padding:14px 26px;
+    border-radius:40px;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    transition:transform .15s, background .2s;
+  }
+  .intro-btn:hover, .restart-btn:hover{transform:translateY(-2px); background:#0f1a20;}
+
+  /* ---- footer note ---- */
+  .footer-note{
+    text-align:center;
+    color:rgba(246,239,226,0.45);
+    font-size:12px;
+    margin-top:20px;
+    letter-spacing:.03em;
+    width: 100%;
+  }
+
+  /* ---- REVEAL (Screen Full) ---- */
+  #reveal-stage-container {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: none;
+    z-index: 10;
+  }
+
+  #hero {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transform: scale(1.05);
+    transition: 1.5s ease-out;
+  }
+
+  #hero.show {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  #overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.3));
+    opacity: 0;
+    transition: 1.2s ease-in;
+  }
+
+  #overlay.show {
+    opacity: 1;
+  }
+
+  #revealText {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 40px;
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: 1.2s ease-out 0.8s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 11;
+  }
+
+  #revealText.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #revealText h1 {
+    font-size: clamp(36px, 10vw, 64px);
+    color: #f6d28b;
+    margin: 10px 0;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  }
+  
+  #revealText p {
+      font-size: clamp(14px, 2vw, 18px);
+      line-height: 1.6;
+      margin-bottom: 25px;
+  }
+
+  #revealText .details {
+    text-align: left;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(5px);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 15px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: rgba(255,255,255,0.85);
+    width: 100%;
+    max-width: 450px;
+  }
+  
+  #revealText .details b { color: #fff; }
+
+  #revealText .options {
+    margin-top: 10px;
+    width: auto;
+  }
+
+  /* ---- Coriandoli ---- */
+  .confetti{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:12;
+  }
+  .confetti span{
+    position:absolute;
+    top:-40px;
+    font-size:20px;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(340deg); opacity:.9; }
+  }
+
+  /* ---- Altri Stili ---- */
+  .stamp { display: none; }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{animation:none;}
+    .confetti span{animation:none; display:none;}
+    #hero, #overlay, #revealText { transition: none; opacity: 1; transform: none; }
+  }
+
+  @media (max-width:420px){
+    .card{padding:30px 22px 26px;}
+  }
+
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="route" id="route"></div>
+  <div class="card" id="card"></div>
+  <div class="footer-note" id="footer-note">un indovinello scritto con affetto, un passo alla volta 🤍</div>
+</div>
+
+<div id="reveal-stage-container">
+    <img id="hero" class="hero" src="" alt="Sfondo Destinazione">
+    <div id="overlay" class="overlay"></div>
+    <div id="revealText" class="revealText">
+        <div style="font-size:22px">La tua destinazione è...</div>
+        <h1 id="reveal-city">Città</h1>
+        <p id="reveal-tagline"></p>
+        <div class="details" id="reveal-details"></div>
+        <button class="restart-btn" id="againBtn">Ricomincia</button>
+    </div>
+</div>
+
+<script>
+/* =========================================================
+   PERSONALIZZA QUI — dati del viaggio
+   ========================================================= */
+const TRIPS = {
+  AMS: {
+    image:"amsterdam.png", 
+    city:"Amsterdam",
+    stamp: "🚲",
+    tagline: "Canali, luci calde e un'atmosfera sospesa: il tuo 18esimo si scrive lì.",
+    details: `
+      <b>Destinazione:</b> Amsterdam, Paesi Bassi<br>
+      <b>Cosa vi aspetta:</b> giro in barca sui canali, museo Van Gogh, una cena in un ristorantino tipico
+    `
+  },
+  BCN: {
+    image:"barcellona.png", 
+    city:"Barcellona",
+    stamp: "☀️",
+    tagline: "Vicoli vivaci, colori mediterranei e architetture che sembrano sogni: il tuo 18esimo si scrive lì.",
+    details: `
+      <b>Destinazione:</b> Barcellona, Spagna<br>
+      <b>Cosa vi aspetta:</b> Sagrada Familia, una passeggiata tra le vie del Barrio Gótico, una cena di tapas
+    `
+  }
+};
+
+/* =========================================================
+   Le domande
+   ========================================================= */
+const QUESTIONS = [
+  {
+    eyebrow: "Capitolo 1 · Un indizio",
+    q: "Se il tuo weekend perfetto fosse un colore, quale sarebbe?",
+    sub: "Rispondi d'istinto, senza pensarci troppo.",
+    options: [
+      { t: "Blu acqua e grigio nuvola, un'atmosfera tranquilla e morbida", w: {AMS:1} },
+      { t: "Giallo sole e rosso acceso, pura energia", w: {BCN:1} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 2 · Che giornata sei",
+    q: "Quale di queste due giornate ti rappresenta di più?",
+    sub: "",
+    options: [
+      { t: "Una giornata tranquilla, tra luci soffuse e silenzi piacevoli", w: {AMS:1} },
+      { t: "Una giornata piena di energia, tra gente, musica e scoperte", w: {BCN:1} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 3 · La tua playlist",
+    q: "Che musica ci sarebbe nella colonna sonora della tua giornata perfetta?",
+    sub: "",
+    options: [
+      { t: "Un jazz sottovoce, in un caffè con le finestre appannate", w: {AMS:1} },
+      { t: "Ritmi latini e chitarre, con tutti che ballano per strada", w: {BCN:1} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 4 · Tempo libero",
+    q: "Hai un pomeriggio libero, senza programmi. Cosa fai?",
+    sub: "",
+    options: [
+      { t: "Mi perdo dentro un museo pieno di opere pazzesche", w: {AMS:1} },
+      { t: "Giro in un mercato coloratissimo, pieno di profumi e voci", w: {BCN:1} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 5 · Se fossi in un film",
+    q: "Se potessi entrare per un giorno dentro un film, quale sceglieresti?",
+    sub: "",
+    options: [
+      { t: "Un film intimo, un po' malinconico, fatto di piccoli dettagli", w: {AMS:1} },
+      { t: "Un film pieno di colori, energia e colpi di scena", w: {BCN:1} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 6 · A tavola",
+    q: "Cosa ti fa venire più fame, solo a pensarci?",
+    sub: "",
+    options: [
+      { t: "Formaggi, dolcetti e un caffè in un localino accogliente", w: {AMS:1} },
+      { t: "Tapas da condividere, sangria fresca e musica dal vivo", w: {BCN:1} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 7 · La tua stagione",
+    q: "Quale stagione ti fa venire più voglia di partire?",
+    sub: "",
+    options: [
+      { t: "L'autunno, con le sue luci calde e i colori tenui", w: {AMS:1} },
+      { t: "La primavera, con i suoi colori accesi e la vita per strada", w: {BCN:1} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 8 · Un souvenir",
+    q: "Se dovessi portarti a casa un souvenir, quale sceglieresti?",
+    sub: "",
+    options: [
+      { t: "Una calamita con un paesaggio di canali e casette colorate", w: {AMS:1} },
+      { t: "Un bicchierino decorato, da tenere in mostra come ricordo", w: {BCN:1} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 9 · Un regalo nel regalo",
+    q: "Dentro questo viaggio, quale piccola esperienza vorresti trovarti?",
+    sub: "",
+    options: [
+      { t: "Un giro speciale in barca, scivolando tra le luci della sera", w: {AMS:2} },
+      { t: "Un tour tra edifici incredibili, unici al mondo", w: {BCN:2} }
+    ]
+  },
+  {
+    eyebrow: "Capitolo 10 · L'ultimo indizio",
+    q: "Per il tuo 18esimo, quale sensazione vorresti provare?",
+    sub: "Ultima domanda: scegli con il cuore.",
+    options: [
+      { t: "La calma di una città d'acqua, tra luci soffuse e atmosfera romantica", w: {AMS:2} },
+      { t: "L'energia mediterranea nell'aria, tra vicoli e sorrisi", w: {BCN:2} }
+    ]
+  }
+];
+
+/* ========================================================= */
+
+let step = -1; // -1 = intro
+let score = { AMS: 0, BCN: 0 };
+let currentTrip = null;
+
+const cardEl = document.getElementById('card');
+const routeEl = document.getElementById('route');
+const footerNoteEl = document.getElementById('footer-note');
+const revealStageContainer = document.getElementById('reveal-stage-container');
+const heroImg = document.getElementById('hero');
+const overlayEl = document.getElementById('overlay');
+const revealTextEl = document.getElementById('revealText');
+const revealCityEl = document.getElementById('reveal-city');
+const revealTaglineEl = document.getElementById('reveal-tagline');
+const revealDetailsEl = document.getElementById('reveal-details');
+const againBtnEl = document.getElementById('againBtn');
+
+function buildRoute(total){
+  routeEl.innerHTML = '<span class="plane">✈️</span>';
+  for(let i=0;i<total;i++){
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    routeEl.appendChild(seg);
+  }
+}
+function updateRoute(current){
+  const segs = routeEl.querySelectorAll('.seg');
+  segs.forEach((s,i)=>{ s.classList.toggle('done', i < current); });
+}
+
+function renderIntro() {
+  routeEl.style.visibility = 'hidden';
+  footerNoteEl.style.display = 'block';
+  revealStageContainer.style.display = 'none';
+  heroImg.classList.remove('show');
+  overlayEl.classList.remove('show');
+  revealTextEl.classList.remove('show');
+
+  cardEl.innerHTML = `
+    <div class="eyebrow">Il tuo regalo</div>
+    <h1>Pronto a scoprire la tua destinazione?</h1>
+    <p class="sub">Ho preparato un piccolo percorso per te. Rispondi d'istinto e scoprirai dove ti porterà il tuo diciottesimo compleanno.</p>
+    <button class="intro-btn" id="startBtn">Inizia l'indovinello</button>
+  `;
+  document.getElementById('startBtn').addEventListener('click', () => {
+    step = 0;
+    routeEl.style.visibility = 'visible';
+    buildRoute(QUESTIONS.length);
+    renderQuestion();
+  });
+}
+
+function renderQuestion() {
+  updateRoute(step);
+  const q = QUESTIONS[step];
+  
+  let html = `
+    <div class="eyebrow">${q.eyebrow}</div>
+    <h1>${q.q}</h1>
+    ${q.sub ? `<p class="sub">${q.sub}</p>` : ''}
+    <div class="options">
+  `;
+  
+  q.options.forEach((opt, idx) => {
+    html += `<button class="opt" data-idx="${idx}">${opt.t}</button>`;
+  });
+  
+  html += `</div>`;
+  cardEl.innerHTML = html;
+
+  // Gestione del click
+  const buttons = cardEl.querySelectorAll('.opt');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = e.target.getAttribute('data-idx');
+      const option = q.options[idx];
+      
+      // Aggiungi punteggio
+      if(option.w.AMS) score.AMS += option.w.AMS;
+      if(option.w.BCN) score.BCN += option.w.BCN;
+      
+      step++;
+      
+      if (step < QUESTIONS.length) {
+        renderQuestion();
+      } else {
+        renderResult();
+      }
+    });
+  });
+}
+
+function renderResult() {
+    routeEl.style.visibility = 'hidden';
+    cardEl.style.display = 'none'; // Nasconde la scheda
+    footerNoteEl.style.display = 'none'; // Nasconde il footer
+
+    // Calcola il vincitore
+    const winnerKey = score.AMS >= score.BCN ? 'AMS' : 'BCN';
+    currentTrip = TRIPS[winnerKey];
+
+    // Forziamo l'apertura del contenitore SUBITO, senza aspettare l'immagine
+    revealStageContainer.style.display = 'block';
+    
+    // Inseriamo i testi della città vincente
+    revealCityEl.innerText = currentTrip.city;
+    revealTaglineEl.innerText = currentTrip.tagline;
+    revealDetailsEl.innerHTML = currentTrip.details;
+
+    // Assegniamo l'immagine. 
+    heroImg.src = currentTrip.image;
+
+    // Facciamo partire le animazioni
+    setTimeout(()=>heroImg.classList.add('show'), 100);
+    setTimeout(()=>overlayEl.classList.add('show'), 1700);
+    setTimeout(()=>revealTextEl.classList.add('show'), 2500);
+    launchConfetti(currentTrip.stamp);
+
+    againBtnEl.addEventListener('click', ()=>{
+        step = -1; 
+        score = {AMS:0, BCN:0};
+        cardEl.style.display = 'flex'; // Riabilita la scheda
+        renderIntro();
+    });
+}
+
+function launchConfetti(stamp) {
+    const container = document.createElement('div');
+    container.className = 'confetti';
+    revealStageContainer.appendChild(container);
+
+    const emoji = stamp;
+    
+    for(let i=0; i<30; i++){
+        const confetto = document.createElement('span');
+        confetto.innerText = emoji;
+        confetto.style.left = (Math.random()*100) + 'vw';
+        confetto.style.animationDelay = (Math.random()*2) + 's';
+        confetto.style.animationDuration = (3 + Math.random()*2) + 's';
+        container.appendChild(confetto);
+    }
+}
+
+// Avvio
+renderIntro();
+</script>
+</body>
+</html>
